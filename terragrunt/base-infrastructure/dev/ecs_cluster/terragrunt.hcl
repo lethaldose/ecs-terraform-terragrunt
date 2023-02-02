@@ -40,7 +40,7 @@ EOF
 }
 
 inputs = {
-  name = "ecs-cluster"
+  name = "ecs-cluster-${include.stage.locals.stage}"
   tags = local.tags
 }
 

@@ -1,28 +1,39 @@
 module "ecs_task_execution_role" {
   source = "../service_role"
   policy_document = {
-    actions = var.ecs_task_execution_role.policy_document.actions
-    effect = var.ecs_task_execution_role.policy_document.effect
-    type = var.ecs_task_execution_role.policy_document.type
+    actions     = var.ecs_task_execution_role.policy_document.actions
+    effect      = var.ecs_task_execution_role.policy_document.effect
+    type        = var.ecs_task_execution_role.policy_document.type
     identifiers = var.ecs_task_execution_role.policy_document.identifiers
   }
-  iam_role_name = var.ecs_task_execution_role.iam_role_name
+  iam_role_name  = var.ecs_task_execution_role.iam_role_name
   iam_policy_arn = var.ecs_task_execution_role.iam_policy_arn
 }
 
 ## --------------------------------------------------------------------------- ##
 
+
 resource "aws_ecs_task_definition" "ecs_task" {
-  family                = var.ecs_task.family
+  family = var.ecs_task.family
+  cpu    = var.ecs_task.cpu
+  memory = var.ecs_task.memory
   container_definitions = jsonencode([{
-    name                = var.ecs_task.container_image_name
-    image               = var.ecs_task.container_image
-    cpu                 = var.ecs_task.cpu
-    memory              = var.ecs_task.memory
-    essential           = true
+    name      = var.ecs_task.container_image_name
+    image     = var.ecs_task.container_image
+    cpu       = var.ecs_task.cpu
+    memory    = var.ecs_task.memory
+    essential = true
     portMappings = [{
-      containerPort     = var.ecs_task.container_image_port
+      containerPort = var.ecs_task.container_image_port
     }]
+    logConfiguration = {
+      logDriver : "awslogs",
+      options : {
+        "awslogs-group" : "/fargate/service/${var.ecs_task.family}"
+        "awslogs-region" : "ap-south-1"
+        "awslogs-stream-prefix" : "ecs"
+      }
+    }
   }])
   requires_compatibilities = var.ecs_task.requires_compatibilities
   network_mode             = var.ecs_task.network_mode
@@ -95,12 +106,12 @@ resource "aws_security_group" "ingress_api" {
 module "ecs_autoscale_role" {
   source = "../service_role"
   policy_document = {
-    actions = var.ecs_autoscale_role.policy_document.actions
-    effect = var.ecs_autoscale_role.policy_document.effect
-    type = var.ecs_autoscale_role.policy_document.type
+    actions     = var.ecs_autoscale_role.policy_document.actions
+    effect      = var.ecs_autoscale_role.policy_document.effect
+    type        = var.ecs_autoscale_role.policy_document.type
     identifiers = var.ecs_autoscale_role.policy_document.identifiers
   }
-  iam_role_name = var.ecs_autoscale_role.iam_role_name
+  iam_role_name  = var.ecs_autoscale_role.iam_role_name
   iam_policy_arn = var.ecs_autoscale_role.iam_policy_arn
 }
 
